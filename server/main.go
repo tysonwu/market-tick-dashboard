@@ -1,61 +1,39 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
-	"net/http"
-	"time"
+	"server/db"
+	"server/exchanges"
+	"server/ticks"
 
-	"github.com/gorilla/websocket"
+	"github.com/spf13/viper"
 )
 
-type Message struct {
-	Exchange string  `json:"exchange"`
-	Symbol   string  `json:"symbol"`
-	Price    float64 `json:"price"`
-	Time     int64   `json:"time"`
-}
-
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	// Upgrade the HTTP connection to a web socket connection
-	upgrader := websocket.Upgrader{}
-	conn, err := upgrader.Upgrade(w, r, nil)
+func init() {
+	viper.SetConfigFile("./config.yaml") // path from go program root
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.Printf("Error upgrading connection: %v\n", err)
-		return
-	}
-	defer conn.Close()
-
-	// Loop indefinitely and send price updates
-	for {
-		// Simulate fetching price data from various exchanges
-		// Replace this code with your own implementation to fetch real price data
-		for _, exchange := range []string{"binance", "coinbase", "bitstamp"} {
-			for _, symbol := range []string{"BTCUSD", "ETHUSD", "LTCUSD"} {
-				price := 10000.0 + (float64(time.Now().UnixNano()%1000000)/1000000)*100.0
-				message := Message{
-					Exchange: exchange,
-					Symbol:   symbol,
-					Price:    price,
-					Time:     time.Now().UnixNano(),
-				}
-				data, err := json.Marshal(message)
-				if err != nil {
-					log.Printf("Error marshaling message: %v\n", err)
-					continue
-				}
-				if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-					log.Printf("Error sending message: %v\n", err)
-					continue
-				}
-				log.Printf("%v\n", price)
-				time.Sleep(100 * time.Millisecond)
-			}
-		}
+		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 }
 
 func main() {
-	http.HandleFunc("/ws", handleWebSocket)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	dbClient, err := db.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbClient.Close()
+
+	go dbClient.PublishTick()
+
+	// Start the Binance websocket stream
+	tickClient := &ticks.TickClient{TickChan: make(chan *ticks.Tick)}
+	go exchanges.Start(tickClient)
+
+	// Continuously update the Redis key-value with the latest tick data received
+	for tick := range tickClient.TickChan {
+		log.Println(tick)
+		dbClient.UpdateLatestTick(tick)
+	}
 }
