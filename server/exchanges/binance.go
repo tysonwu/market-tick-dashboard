@@ -2,7 +2,7 @@ package exchanges
 
 import (
 	"fmt"
-	"server/ticks"
+	"server/models"
 	"strconv"
 	"time"
 
@@ -14,14 +14,13 @@ type StreamConfig struct {
 	Symbols []string `mapstructure:"binance"`
 }
 
-func Start(tickClient *ticks.TickClient) {
+func StartTickStreams(client *models.Client) {
 	var streamConfig StreamConfig
 	err := viper.UnmarshalKey("subscriptions", &streamConfig)
 	if err != nil {
 		fmt.Println("error in reading config")
 		return
 	}
-	fmt.Println(streamConfig.Symbols)
 
 	wsAggTradeHandler := func(event *binance.WsAggTradeEvent) {
 		price, err := strconv.ParseFloat(event.Price, 64)
@@ -29,19 +28,59 @@ func Start(tickClient *ticks.TickClient) {
 			fmt.Println(err)
 			return
 		}
-		tick := &ticks.Tick{
+		tick := &models.Tick{
 			Symbol:   event.Symbol,
 			Price:    price,
 			Exchange: "binance",
 			Time:     time.Unix(0, event.Time*int64(time.Millisecond)),
 		}
-		tickClient.TickChan <- tick
+		client.TickChan <- tick
 	}
 	errHandler := func(err error) {
 		fmt.Println(err)
 	}
 
 	doneC, _, err := binance.WsCombinedAggTradeServe(streamConfig.Symbols, wsAggTradeHandler, errHandler)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	<-doneC
+}
+
+func StartBidAskStreams(client *models.Client) {
+	var streamConfig StreamConfig
+	err := viper.UnmarshalKey("subscriptions", &streamConfig)
+	if err != nil {
+		fmt.Println("error in reading config")
+		return
+	}
+
+	wsBookTickerHandler := func(event *binance.WsBookTickerEvent) {
+		bestBidPrice, err := strconv.ParseFloat(event.BestBidPrice, 64)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		bestAskPrice, err := strconv.ParseFloat(event.BestAskPrice, 64)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		bidAskTick := &models.BidAskTick{
+			Symbol:   event.Symbol,
+			BidPrice: bestBidPrice,
+			AskPrice: bestAskPrice,
+			Exchange: "binance",
+			Time:     time.Now(), // binance API did not give the time field in this ws
+		}
+		client.BidAskTickChan <- bidAskTick
+	}
+	errHandler := func(err error) {
+		fmt.Println(err)
+	}
+
+	doneC, _, err := binance.WsCombinedBookTickerServe(streamConfig.Symbols, wsBookTickerHandler, errHandler)
 	if err != nil {
 		fmt.Println(err)
 		return

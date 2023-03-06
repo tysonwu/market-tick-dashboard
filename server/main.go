@@ -5,7 +5,7 @@ import (
 	"log"
 	"server/db"
 	"server/exchanges"
-	"server/ticks"
+	"server/models"
 
 	"github.com/spf13/viper"
 )
@@ -26,14 +26,27 @@ func main() {
 	defer dbClient.Close()
 
 	go dbClient.PublishTick()
+	go dbClient.PublishBidAskTick()
 
 	// Start the Binance websocket stream
-	tickClient := &ticks.TickClient{TickChan: make(chan *ticks.Tick)}
-	go exchanges.Start(tickClient)
+	client := &models.Client{
+		TickChan:       make(chan *models.Tick),
+		BidAskTickChan: make(chan *models.BidAskTick),
+	}
+	go exchanges.StartTickStreams(client)
+	go exchanges.StartBidAskStreams(client)
 
 	// Continuously update the Redis key-value with the latest tick data received
-	for tick := range tickClient.TickChan {
-		log.Println(tick)
-		dbClient.UpdateLatestTick(tick)
+	go func() {
+		for tick := range client.TickChan {
+			// log.Println(*tick)
+			dbClient.UpdateLatestTick(tick)
+		}
+	}()
+
+	// not putting it into goroutine to prevent main program stops
+	for tick := range client.BidAskTickChan {
+		// log.Println(*tick)
+		dbClient.UpdateLatestBidAskTick(tick)
 	}
 }
