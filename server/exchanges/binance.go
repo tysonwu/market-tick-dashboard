@@ -7,9 +7,22 @@ import (
 	"time"
 
 	"github.com/adshao/go-binance/v2"
+	"github.com/spf13/viper"
 )
 
+type StreamConfig struct {
+	Symbols []string `mapstructure:"binance"`
+}
+
 func Start(tickClient *ticks.TickClient) {
+	var streamConfig StreamConfig
+	err := viper.UnmarshalKey("subscriptions", &streamConfig)
+	if err != nil {
+		fmt.Println("error in reading config")
+		return
+	}
+	fmt.Println(streamConfig.Symbols)
+
 	wsAggTradeHandler := func(event *binance.WsAggTradeEvent) {
 		price, err := strconv.ParseFloat(event.Price, 64)
 		if err != nil {
@@ -28,8 +41,7 @@ func Start(tickClient *ticks.TickClient) {
 		fmt.Println(err)
 	}
 
-	symbols := []string{"btcusdt", "ethusdt", "bnbusdt"}
-	doneC, _, err := binance.WsCombinedAggTradeServe(symbols, wsAggTradeHandler, errHandler)
+	doneC, _, err := binance.WsCombinedAggTradeServe(streamConfig.Symbols, wsAggTradeHandler, errHandler)
 	if err != nil {
 		fmt.Println(err)
 		return

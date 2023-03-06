@@ -2,3 +2,15 @@ redis:
   address: "localhost:6379"
   password: ""
   db: 0
+
+subscriptions:
+  binance:
+  - btcusdt
+  - ethusdt
+  - bnbusdt
+  - xrpusdt
+  - adausdt
+  - dogeusdt
+  - maticusdt
+  - solusdt
+  - ethbtc
