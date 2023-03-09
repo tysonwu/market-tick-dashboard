@@ -19,6 +19,9 @@ func init() {
 }
 
 func main() {
+	// to prevent main thread from exiting
+	done := make(chan bool)
+
 	dbClient, err := db.NewClient()
 	if err != nil {
 		log.Fatal(err)
@@ -33,6 +36,8 @@ func main() {
 		TickChan:       make(chan *models.Tick),
 		BidAskTickChan: make(chan *models.BidAskTick),
 	}
+
+	// ============BINANCE===========
 	go exchanges.StartTickStreams(client)
 	go exchanges.StartBidAskStreams(client)
 
@@ -44,9 +49,30 @@ func main() {
 		}
 	}()
 
-	// not putting it into goroutine to prevent main program stops
-	for tick := range client.BidAskTickChan {
-		// log.Println(*tick)
-		dbClient.UpdateLatestBidAskTick(tick)
-	}
+	go func() {
+		for tick := range client.BidAskTickChan {
+			// log.Println(*tick)
+			dbClient.UpdateLatestBidAskTick(tick)
+		}
+	}()
+
+	// ============KUCOIN===========
+	go exchanges.StartKucoinPriceStreams(client)
+
+	// Continuously update the Redis key-value with the latest tick data received
+	go func() {
+		for tick := range client.TickChan {
+			// log.Println(*tick)
+			dbClient.UpdateLatestTick(tick)
+		}
+	}()
+
+	go func() {
+		for tick := range client.BidAskTickChan {
+			// log.Println(*tick)
+			dbClient.UpdateLatestBidAskTick(tick)
+		}
+	}()
+
+	<-done
 }

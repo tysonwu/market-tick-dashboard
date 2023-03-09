@@ -10,7 +10,7 @@ import (
 	"github.com/adshao/go-binance/v2"
 )
 
-func TestStart(t *testing.T) {
+func TestBinanceConnectivity(t *testing.T) {
 	wsAggTradeHandler := func(event *binance.WsAggTradeEvent) {
 		price, err := strconv.ParseFloat(event.Price, 64)
 		log.Println(price)

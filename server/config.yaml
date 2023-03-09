@@ -5,12 +5,22 @@ redis:
 
 subscriptions:
   binance:
-  - btcusdt
-  - ethusdt
-  - bnbusdt
-  - xrpusdt
-  - adausdt
-  - dogeusdt
-  - maticusdt
-  - solusdt
-  - ethbtc
+  - BTCUSDT
+  - ETHUSDT
+  - BNBUSDT
+  - XRPUSDT
+  - ADAUSDT
+  - DOGEUSDT
+  - MATICUSDT
+  - SOLUSDT
+  - ETHBTC
+  kucoin:
+  - BTC-USDT
+  - ETH-USDT
+  - BNB-USDT
+  - XRP-USDT
+  - ADA-USDT
+  - DOGE-USDT
+  - MATIC-USDT
+  - SOL-USDT
+  - ETH-BTC

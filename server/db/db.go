@@ -45,7 +45,7 @@ func NewClient() (*DbClient, error) {
 func (db *DbClient) PublishTick() {
 	// loop to continuously read the chan
 	for tick := range db.TickChan {
-		symbol := tick.Symbol
+		standardSymbol := tick.StandardSymbol
 		exchange := tick.Exchange
 		jsonData, err := json.Marshal(tick)
 		if err != nil {
@@ -60,7 +60,7 @@ func (db *DbClient) PublishTick() {
 			continue
 		}
 
-		keyName := fmt.Sprintf("ticks:%s:%s", symbol, exchange)
+		keyName := fmt.Sprintf("ticks:%s:%s", standardSymbol, exchange)
 		err = db.client.HSet(context.Background(), keyName, m).Err() // set <string: hash>
 		if err != nil {
 			fmt.Println(err)
@@ -72,7 +72,7 @@ func (db *DbClient) PublishTick() {
 func (db *DbClient) PublishBidAskTick() {
 	// loop to continuously read the chan
 	for tick := range db.BidAskTickChan {
-		symbol := tick.Symbol
+		standardSymbol := tick.StandardSymbol
 		exchange := tick.Exchange
 		jsonData, err := json.Marshal(tick)
 		if err != nil {
@@ -87,7 +87,7 @@ func (db *DbClient) PublishBidAskTick() {
 			continue
 		}
 
-		keyName := fmt.Sprintf("bidAskTicks:%s:%s", symbol, exchange)
+		keyName := fmt.Sprintf("bidAskTicks:%s:%s", standardSymbol, exchange)
 		err = db.client.HSet(context.Background(), keyName, m).Err() // set <string: hash>
 		if err != nil {
 			fmt.Println(err)

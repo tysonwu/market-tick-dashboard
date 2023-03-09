@@ -10,17 +10,27 @@ import (
 	"github.com/spf13/viper"
 )
 
-type StreamConfig struct {
+type BinanceStreamConfig struct {
 	Symbols []string `mapstructure:"binance"`
 }
 
+func makeBinanceSymbolMap(symbols []string) models.SymbolMap {
+	m := models.SymbolMap{}
+	for _, s := range symbols {
+		m[s] = StandardizeBinanceSymbol(s)
+	}
+	return m
+}
+
 func StartTickStreams(client *models.Client) {
-	var streamConfig StreamConfig
+	var streamConfig BinanceStreamConfig
 	err := viper.UnmarshalKey("subscriptions", &streamConfig)
 	if err != nil {
 		fmt.Println("error in reading config")
 		return
 	}
+
+	binanceSymbolMap := makeBinanceSymbolMap(streamConfig.Symbols)
 
 	wsAggTradeHandler := func(event *binance.WsAggTradeEvent) {
 		price, err := strconv.ParseFloat(event.Price, 64)
@@ -29,10 +39,11 @@ func StartTickStreams(client *models.Client) {
 			return
 		}
 		tick := &models.Tick{
-			Symbol:   event.Symbol,
-			Price:    price,
-			Exchange: "binance",
-			Time:     time.Unix(0, event.Time*int64(time.Millisecond)),
+			StandardSymbol: binanceSymbolMap[event.Symbol],
+			ExchangeSymbol: event.Symbol,
+			Price:          price,
+			Exchange:       "binance",
+			Time:           time.Unix(0, event.Time*int64(time.Millisecond)),
 		}
 		client.TickChan <- tick
 	}
@@ -49,12 +60,14 @@ func StartTickStreams(client *models.Client) {
 }
 
 func StartBidAskStreams(client *models.Client) {
-	var streamConfig StreamConfig
+	var streamConfig BinanceStreamConfig
 	err := viper.UnmarshalKey("subscriptions", &streamConfig)
 	if err != nil {
 		fmt.Println("error in reading config")
 		return
 	}
+
+	binanceSymbolMap := makeBinanceSymbolMap(streamConfig.Symbols)
 
 	wsBookTickerHandler := func(event *binance.WsBookTickerEvent) {
 		bestBidPrice, err := strconv.ParseFloat(event.BestBidPrice, 64)
@@ -68,11 +81,12 @@ func StartBidAskStreams(client *models.Client) {
 			return
 		}
 		bidAskTick := &models.BidAskTick{
-			Symbol:   event.Symbol,
-			BidPrice: bestBidPrice,
-			AskPrice: bestAskPrice,
-			Exchange: "binance",
-			Time:     time.Now(), // binance API did not give the time field in this ws
+			StandardSymbol: binanceSymbolMap[event.Symbol],
+			ExchangeSymbol: event.Symbol,
+			BidPrice:       bestBidPrice,
+			AskPrice:       bestAskPrice,
+			Exchange:       "binance",
+			Time:           time.Now().Round(0), // binance API did not give the time field in this ws; without Round(0), there will be monotonic time `m=`
 		}
 		client.BidAskTickChan <- bidAskTick
 	}
