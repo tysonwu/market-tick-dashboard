@@ -1,23 +1,26 @@
 {
   "name": "app",
-  "version": "0.1.0",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@types/node": "18.14.5",
-    "@types/react": "18.0.28",
-    "@types/react-dom": "18.0.11",
-    "eslint": "8.35.0",
-    "eslint-config-next": "13.2.3",
     "ioredis": "^5.3.1",
-    "next": "13.2.3",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "typescript": "4.9.5"
+    "ka-table": "^7.12.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "socket.io": "^4.6.1",
+    "socket.io-client": "^4.6.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
   }
 }

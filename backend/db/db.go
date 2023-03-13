@@ -53,15 +53,19 @@ func (db *DbClient) PublishTick() {
 			continue
 		}
 
-		var m map[string]interface{}
-		err = json.Unmarshal(jsonData, &m)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
 		keyName := fmt.Sprintf("ticks:%s:%s", standardSymbol, exchange)
-		err = db.client.HSet(context.Background(), keyName, m).Err() // set <string: hash>
+
+		// option 1: set tick to key
+		// var m map[string]interface{}
+		// err = json.Unmarshal(jsonData, &m)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	continue
+		// }
+		// err = db.client.HSet(context.Background(), keyName, m).Err() // set <string: hash>
+
+		// option 2: publish to channel of name key
+		err = db.client.Publish(context.Background(), keyName, jsonData).Err()
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -80,15 +84,19 @@ func (db *DbClient) PublishBidAskTick() {
 			continue
 		}
 
-		var m map[string]interface{}
-		err = json.Unmarshal(jsonData, &m)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
 		keyName := fmt.Sprintf("bidAskTicks:%s:%s", standardSymbol, exchange)
-		err = db.client.HSet(context.Background(), keyName, m).Err() // set <string: hash>
+
+		// option 1: set tick to key
+		// var m map[string]interface{}
+		// err = json.Unmarshal(jsonData, &m)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	continue
+		// }
+		// err = db.client.HSet(context.Background(), keyName, m).Err() // set <string: hash>
+
+		// option 2: publish to channel of name key
+		err = db.client.Publish(context.Background(), keyName, jsonData).Err()
 		if err != nil {
 			fmt.Println(err)
 			continue
