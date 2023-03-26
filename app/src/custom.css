@@ -1,0 +1,48 @@
+.card {
+    background-color: #00000005;
+    padding: 0.5em 1.2em;
+    margin: 5px;
+    border-radius: 10px;
+    border: #00000010 solid 1px;
+    box-shadow: 0px 0px 8px #00000010;
+    max-width: 40%;
+    min-width: 360px;
+}
+
+.cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.card .exchanges {
+    /* color: red; */
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.card .exchanges .exchange {
+    padding: 0px 20px 0px 0px;
+    text-align: center;
+    /* min-width: 20%; */
+    flex: 1;
+}
+
+.card .exchanges .exchange .exchange-name {
+    font-weight: bold;
+}
+
+.card .exchanges .exchange .bid{
+    color: #dd2040;
+}
+
+.card .exchanges .exchange .last-traded {
+    font-weight: 600;
+    font-size: 1.4em;
+}
+
+.card .exchanges .exchange .ask{
+    color: #20aa90;
+}

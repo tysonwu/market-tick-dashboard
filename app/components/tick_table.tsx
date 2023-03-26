@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { Table } from 'ka-table';
-import { DataType, EditingMode, SortingMode } from 'ka-table/enums';
+import { useState, useEffect } from 'react';
+// import ReactApexChart from 'reac/t-apexcharts';
+// import { ApexOptions } from 'apexcharts';
 
 interface SymbolData {
   // StandardSymbol: string;
@@ -31,7 +31,22 @@ const symbols: Array<string> = [
   'DOGE-USDT',
   'MATIC-USDT',
   'SOL-USDT',
+  'DOT-USDT',
+  'TRX-USDT',
+  'SHIB-USDT',
+  'LTC-USDT',
+  'AVAX-USDT',
   'ETH-BTC',
+  'BNB-BTC',
+  'XRP-BTC',
+  'ADA-BTC',
+  'DOGE-BTC',
+  'MATIC-BTC',
+  'SOL-BTC',
+  'DOT-BTC',
+  'TRX-BTC',
+  'LTC-BTC',
+  'AVAX-BTC',
 ]
 
 const symbolDataDefaultValues: SymbolData = {
@@ -56,12 +71,7 @@ for (var i = 0; i < symbols.length; i++) {
 }
 
 export default function TickTable() {
-  const tableRef = useRef(defaultPriceTable)
   const [table, setTable] = useState<PriceTable>(defaultPriceTable);
-
-  useEffect(() => {
-    tableRef.current = table
-  }, [table]);
 
   useEffect(
     () => {
@@ -73,18 +83,21 @@ export default function TickTable() {
         var { channel, message } = JSON.parse(e.data);
         var [ type, symbol, exchange ] = channel.split(':');
         var msg = JSON.parse(message);
-        const newTable = structuredClone(tableRef.current);
-        if (type === 'ticks') {
-          if (exchange == 'binance') { newTable[symbol].binance = msg['Price']; };
-          if (exchange == 'kucoin') { newTable[symbol].kucoin = msg['Price']; };
-          setTable(newTable);
-        };
-        if (type === 'bidAskTicks') {
-          if (exchange === 'binance') { newTable[symbol].binanceBid = msg['Bid']; newTable[symbol].binanceAsk = msg['Ask']; }
-          if (exchange === 'kucoin') { newTable[symbol].kucoinBid = msg['Bid']; newTable[symbol].kucoinAsk = msg['Ask']; }
-          setTable(newTable);
-        };
+
+        setTable((prevTable) => {
+          var newTable = structuredClone(prevTable);
+          if (type === 'ticks') {
+            if (exchange == 'binance') { newTable[symbol].binance = msg['Price']; };
+            if (exchange == 'kucoin') { newTable[symbol].kucoin = msg['Price']; };
+          };
+          if (type === 'bidAskTicks') {
+            if (exchange === 'binance') { newTable[symbol].binanceBid = msg['Bid']; newTable[symbol].binanceAsk = msg['Ask']; }
+            if (exchange === 'kucoin') { newTable[symbol].kucoinBid = msg['Bid']; newTable[symbol].kucoinAsk = msg['Ask']; }
+          };
+          return newTable;
+        });
       };
+      // called when cleaning up
       return () => {
         ws.close();
       }
@@ -92,32 +105,67 @@ export default function TickTable() {
     []
   );
 
-  // const dataArray = Array(10).fill(0.12).map(
-  //   (val, index) => ({
-  //     symbol: `Symbol${index}`,
-  //     binance: `B${index}`,
-  //     kucoin: `K${index}`,
-  //   }),
-  // );
-  // console.log(dataArray);
+  // const chartOptions: ApexOptions = {
+  //   chart: {
+  //     type: 'boxPlot',
+  //     // height: 350
+  //   },
+  //   // title: {
+  //   //   text: 'Horizontal BoxPlot Chart',
+  //   //   align: 'left'
+  //   // },
+  //   plotOptions: {
+  //     bar: {
+  //       horizontal: true,
+  //       barHeight: '50%'
+  //     },
+  //     boxPlot: {
+  //       colors: {
+  //         upper: '#e9ecef',
+  //         lower: '#f8f9fa'
+  //       }
+  //     }
+  //   },
+  //   stroke: {
+  //     colors: ['#6c757d']
+  //   }
+  // };
 
   return (
-    <div>
-      <Table
-        columns={[
-          { key: 'symbol', title: 'Symbol', dataType: DataType.String },
-          { key: 'binanceAsk', title: 'Binance Bid', dataType: DataType.Number },
-          { key: 'binanceBid', title: 'Binance Ask', dataType: DataType.Number },
-          { key: 'kucoinAsk', title: 'Kucoin Bid', dataType: DataType.Number },
-          { key: 'kucoinBid', title: 'Kucoin Ask', dataType: DataType.Number },
-          { key: 'binance', title: 'Binance', dataType: DataType.Number },
-          { key: 'kucoin', title: 'Kucoin', dataType: DataType.Number },
-        ]}
-        data={Object.values(table)}
-        editingMode={EditingMode.Cell}
-        rowKeyField={'id'}
-        sortingMode={SortingMode.Single}
-      />
+    <div className='cards'>
+      {
+        symbols.map((symbol) => (
+          <div className='card' key={symbol}>
+            <h2>{symbol}</h2>
+            <div className='exchanges'>
+              <div className='exchange' id='binance'>
+                <p className='exchange-name'>Binance</p>
+                <p className='bid'>{table[symbol].binanceAsk ? table[symbol].binanceAsk : "-"}</p>
+                <p className='last-traded'>{table[symbol].binance ? table[symbol].binance : "-"}</p>
+                <p className='ask'>{table[symbol].binanceBid ? table[symbol].binanceBid : "-"}</p>
+              </div>
+              <div className='exchange' id='kucoin'>
+                <p className='exchange-name'>Kucoin</p>
+                <p className='bid'>{table[symbol].kucoinAsk ? table[symbol].kucoinAsk : "-"}</p>
+                <p className='last-traded'>{table[symbol].kucoin ? table[symbol].kucoin : "-"}</p>
+                <p className='ask'>{table[symbol].kucoinBid ? table[symbol].kucoinBid : "-"}</p>
+              </div>
+
+            </div>
+            {/* react-apexchart */}
+            {/* <ReactApexChart
+              series={[{
+                data: [
+                  {x: 'Binance', y: [table[symbol].binanceBid, table[symbol].binanceAsk]},
+                  {x: 'Kucoin',  y: [table[symbol].kucoinBid, table[symbol].kucoinAsk]},
+                ]
+              }]}
+              options={chartOptions}
+              type='rangeBar'
+            /> */}
+          </div>
+        ))
+      }
     </div>
   );
 };

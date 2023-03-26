@@ -13,7 +13,23 @@ subscriptions:
   - DOGEUSDT
   - MATICUSDT
   - SOLUSDT
+  - DOTUSDT
+  - TRXUSDT
+  - SHIBUSDT
+  - LTCUSDT
+  - AVAXUSDT
   - ETHBTC
+  - BNBBTC
+  - XRPBTC
+  - ADABTC
+  - DOGEBTC
+  - MATICBTC
+  - SOLBTC
+  - DOTBTC
+  - TRXBTC
+  - LTCBTC
+  - AVAXBTC
+
   kucoin:
   - BTC-USDT
   - ETH-USDT
@@ -23,4 +39,19 @@ subscriptions:
   - DOGE-USDT
   - MATIC-USDT
   - SOL-USDT
+  - DOT-USDT
+  - TRX-USDT
+  - SHIB-USDT
+  - LTC-USDT
+  - AVAX-USDT
   - ETH-BTC
+  - BNB-BTC
+  - XRP-BTC
+  - ADA-BTC
+  - DOGE-BTC
+  - MATIC-BTC
+  - SOL-BTC
+  - DOT-BTC
+  - TRX-BTC
+  - LTC-BTC
+  - AVAX-BTC

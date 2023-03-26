@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "apexcharts": "^3.37.1",
     "ioredis": "^5.3.1",
     "ka-table": "^7.12.1",
     "react": "^18.2.0",
+    "react-apexcharts": "^1.4.0",
     "react-dom": "^18.2.0",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1"
