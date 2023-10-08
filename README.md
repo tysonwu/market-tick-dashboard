@@ -1,6 +1,8 @@
-# arbitrage
+# market-tick-dashboard
 
-Crypto arbitrage research dashboard. Displays real-time tick price across two exchanges with a configurable list of tokens.
+Crypto market tick dashboard. Displays real-time tick price across two exchanges with a configurable list of tokens.
+
+![Demo](./demo/demo.gif)
 
 ## Backend
 
@@ -26,4 +28,4 @@ npm run dev
 
 ## Specification
 
-- Symbol style example: BTC-USDT (original in Binance: BTCUSDT, Kucoin: BTC-USDT)
+- Symbol style example: BTC-USDT (originally on Binance: BTCUSDT, Kucoin: BTC-USDT)
